@@ -1,9 +1,32 @@
+const Car = {
+  getX: () => {
+  },
+  getY: () => {
+  },
+};
+
+class Sensor {
+  constructor(name) {
+    this.name = name;
+    this.element = document.getElementById(name);
+    this.width = 500;
+  }
+  getRightX() {
+    return this.element.offsetLeft+this.width;
+  }
+}
+
+const sensors = {
+  front: new Sensor('sensor_2'),
+};
+
+
 function moveWall()
 {
     var getWallX = document.getElementById('wall').offsetLeft;
     var getWallY = document.getElementById('wall').offsetTop;
     
-    var getAIX = document.getElementById('sensor_2').offsetLeft+500;
+    var getAIX = sensors.front.getRightX();
     var getAIY = document.getElementById('ai').offsetTop;
     
     var successRate = Math.floor((avoided/(avoided+crash)*100));   
@@ -42,11 +65,11 @@ function moveCar(direction)
 
 function checkCollision()
 {
-	var getWallX = document.getElementById('wall').offsetLeft;
-    var getAIX = document.getElementById('sensor_2').offsetLeft+500;
+  var getWallX = document.getElementById('wall').offsetLeft;
+  var getAIX = sensors.front.getRightX();
     
-    var getWallY = document.getElementById('wall').offsetTop+100;
-    var getAIY = document.getElementById('ai').offsetTop;
+  var getWallY = document.getElementById('wall').offsetTop+100;
+  var getAIY = document.getElementById('ai').offsetTop;
         
     if(getWallX < getAIX && getAIY >= getWallY-100 && getAIY < getWallY || getWallX < getAIX && getWallY-100 > getAIY && getWallY-100 < getAIY+50)
     {
