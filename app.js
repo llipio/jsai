@@ -7,6 +7,7 @@ var crash = 0;
 
 // CONSTANTS
 const INTERVAL = 20; // milliseconds
+const LEARN_BUFFER = 1;
 
 function tick() {
   c++;
@@ -50,7 +51,26 @@ function runSim(state) {
 var lastWallCount = 0;
 var lastAvoided = 0;
 var lastCrash = 0;
-var tryzone = 0;
+
+const DB = {
+  tryzone: 0,
+  getExperience(aizone, wallzone, tryzone) {
+    const buildvar = aizone+wallzone+tryzone; // ec 010
+    return document.getElementById('succ_'+buildvar).innerHTML;
+  },
+  setExperienceVal(key, val) {
+    document.getElementById('succ_'+key).innerHTML = val;
+  },
+  setTryZone: (next) => {
+    DB.tryzone = next;
+  },
+  setRandomTryzone: () => {
+    DB.tryzone = Math.floor(Math.random() * 2);//random between 0 and 1
+  },
+  getAllTryzones: () => {
+    return [0,1];
+  },
+}
 
 function experience() {
   var aizone;
@@ -64,69 +84,49 @@ function experience() {
   Stats.setWallZone(wallzone);
   aizone = Game.getZone(Car);
   Stats.setCarZone(aizone);
-
-  //trying
-  document.getElementById('t_trying').innerHTML = tryzone;
+  Stats.setTryZone(DB.tryzone);
 
   //read from experience 'database'
-  var buildvar = aizone+wallzone+tryzone;
-  var experienceDB = document.getElementById('succ_'+buildvar).innerHTML;
+  let buildvar = aizone+wallzone+DB.tryzone; // ec 010
+  let experienceDB = DB.getExperience(aizone, wallzone, DB.tryzone);
 
-  //read from 'DB' and decide
-  if(tryzone == 0) {
-    buildvarOther = aizone+wallzone+1;
-    experienceDBOther = document.getElementById('succ_'+buildvarOther).innerHTML;
-    if(parseInt(experienceDBOther) > parseInt(experienceDB)+parseInt(10)) {
-      buildvar = buildvarOther;
-      experienceDB = document.getElementById('succ_'+buildvar).innerHTML;
-      tryzone = 1;
-      }
+  const tryVals = DB.getAllTryzones().map( (t) => {
+    return {
+      try: t,
+      val: parseInt(DB.getExperience(aizone, wallzone, t))
+    };
+  });
+
+  tryVals.sort((a,b) => {
+    return b.val - a.val;
+  });
+
+  const bestTry = tryVals[0];
+  if(bestTry.val > DB.getExperience(aizone, wallzone, DB.tryzone)) {
+    DB.setTryZone(bestTry.try);
+    buildvar = aizone+wallzone+bestTry.try;
+    experienceDB = bestTry.val;
+  }
+
+  //move AI
+  DB.tryzone ? Car.move('down') : Car.move('up');
+
+  //update DB only when wall is leftmost
+  if(lastWallCount != walls) {
+    //do update
+    if(lastAvoided != avoided) {
+      DB.setExperienceVal(buildvar, parseInt(experienceDB) + 1);
+      lastAvoided = avoided;
     }
 
-    if(tryzone == 1) {
-      buildvarOther = aizone+wallzone+0;
-      experienceDBOther = document.getElementById('succ_'+buildvarOther).innerHTML;
-      if(parseInt(experienceDBOther) > parseInt(experienceDB)+parseInt(10)) {
-        buildvar = buildvarOther;
-        experienceDB = document.getElementById('succ_'+buildvar).innerHTML;
-        tryzone = 0;
-      }
-
+    if(lastCrash != crash) {
+      DB.setExperienceVal(buildvar, parseInt(experienceDB) - 1);
+      lastCrash = crash;
     }
 
-    //move AI
-    tryzone ? Car.move('down') : Car.move('up');
+    lastWallCount = walls;
+    DB.setRandomTryzone();
 
-
-      //update DB only when wall is leftmost
-      if(lastWallCount != walls)
-        {
-          //do update
-          if(lastAvoided != avoided)
-            {
-              experienceDB = parseInt(experienceDB)+parseInt(1);
-              document.getElementById('succ_'+buildvar).innerHTML = experienceDB;
-              lastAvoided = avoided;
-            }
-
-            if(lastCrash != crash)
-              {
-                experienceDB = parseInt(experienceDB)-parseInt(1);
-                document.getElementById('succ_'+buildvar).innerHTML = experienceDB;
-                lastCrash = crash;
-              }
-
-              lastWallCount = walls;
-              tryzone = Math.floor(Math.random() * 2);//random between 0 and 1
-
-              //randomize wall position
-              var randomWallYPos = Math.floor(Math.random() * (200 + 1) + 0);
-              document.getElementById('wall').style.marginTop = randomWallYPos+"px";  
-
-              document.getElementById('wall').style.left = null;
-              document.getElementById('wall').style.right = '0px';
-
-
-        }
-
+    Wall.setRandomPosition();
+  }
 }

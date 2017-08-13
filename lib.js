@@ -53,7 +53,14 @@ const Wall = {
   },
   getCenter: () => {
     return Wall.getY() - 100 + 50;
-  }
+  },
+  setRandomPosition: () => {
+    //randomize wall position
+    const randomWallYPos = Math.floor(Math.random() * (200 + 1) + 0);
+    Wall.element.style.marginTop = randomWallYPos+"px";  
+    Wall.element.style.left = null;
+    Wall.element.style.right = '0px';
+  },
 };
 
 class Sensor {
@@ -98,6 +105,9 @@ const Stats = {
     
     var successRate = Math.floor((avoided/(avoided+crash)*100));   
     document.getElementById('topDebug').innerHTML = "&nbsp;["+c+"]<br>&nbsp;Wall ("+getWallX+","+getWallY+")<br>&nbsp;AI ("+getAIX+","+getAIY+")<br>&nbsp;Walls: "+walls+" Avoided: "+avoided+" Crash: "+crash+" Success rate: "+successRate+"%";
+  },
+  setTryZone: (tz) => {
+    document.getElementById('t_trying').innerHTML = tz;
   }
 }
 
