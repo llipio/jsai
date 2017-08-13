@@ -89,10 +89,7 @@ const Stats = {
   setCarZone: (val) => {
     document.getElementById('t_ai_zone').innerHTML = val;
   },
-}
-
-
-function moveWall() {
+  updateDebug: () => {
     var getWallX = Wall.getX();
     var getWallY = Wall.getY();
     
@@ -100,15 +97,14 @@ function moveWall() {
     var getAIY = Car.getY();
     
     var successRate = Math.floor((avoided/(avoided+crash)*100));   
-    
     document.getElementById('topDebug').innerHTML = "&nbsp;["+c+"]<br>&nbsp;Wall ("+getWallX+","+getWallY+")<br>&nbsp;AI ("+getAIX+","+getAIY+")<br>&nbsp;Walls: "+walls+" Avoided: "+avoided+" Crash: "+crash+" Success rate: "+successRate+"%";
-        
-    Wall.moveLeft();
+  }
 }
 
-// move car up or down, make sure it stays inbound
-function moveCar(direction) {
-  Car.move(direction);
+
+function moveWall() {
+  Stats.updateDebug();
+  Wall.moveLeft();
 }
 
 function checkCollision()
