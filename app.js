@@ -81,8 +81,10 @@ function experience() {
   var getAIY = Car.getY();
 
   wallzone = Game.getZone(Wall);
-  Stats.setWallZone(wallzone);
   aizone = Game.getZone(Car);
+
+  // update Stats
+  Stats.setWallZone(wallzone);
   Stats.setCarZone(aizone);
   Stats.setTryZone(DB.tryzone);
 
